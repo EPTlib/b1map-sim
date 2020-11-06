@@ -16,8 +16,8 @@
 title: b1map-sim
 description: >- # this means to ignore newlines until "baseurl:"
   b1map-sim - A generator of virtual B1-mapping images.
-baseurl: "/" # the subpath of your site, e.g. /blog
-url: "https://eptlib.github.io/b1map-sim" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/b1map-sim" # the subpath of your site, e.g. /blog
+url: "https://eptlib.github.io/" # the base hostname & protocol for your site, e.g. http://example.com
 github_username: eptlib
 
 # Build settings
@@ -41,7 +41,7 @@ exclude:
   - /docs/methods/savitzky-golay.md
 
 # Set a path/url to a logo that will be displayed instead of the title
-logo: ""
+#logo: ""
 
 # Enable or disable the site search
 # Supports true (default) or false
