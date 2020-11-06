@@ -33,81 +33,160 @@
 #include "b1map/b1mapping.h"
 
 #include <iostream>
+#include <random>
 
 #include "b1map/sequences.h"
 
 namespace b1map {
 
-// Double-angle b1-mapping
-void DoubleAngle(Image<double> *alpha_est, Image<std::complex<double> > *img1,
-	Image<std::complex<double> > *img2, const double alpha_nom, const double TR,
-	const double TE, const Image<std::complex<double> > &b1p,
-	const Image<std::complex<double> > &b1m, const double spoiling,
-	const Body &body) {
-	// noiseless GRE images
-	GREImage(img1,alpha_nom,TR,TE,b1p,b1m,spoiling,body);
-	GREImage(img2,2.0*alpha_nom,TR,TE,b1p,b1m,spoiling,body);
-	// estimate the flip-angle
-	DoubleAngleAlpha(alpha_est,*img1,*img2);
+// B1Mapping constructor
+B1Mapping::
+B1Mapping() {
 	return;
 }
-void DoubleAngleAlpha(Image<double> *alpha_est,
-	const Image<std::complex<double> > &img1,
-	const Image<std::complex<double> > &img2) {
-	*alpha_est = Image<double>(img1.GetSize(0),img1.GetSize(1),img1.GetSize(2));
-	for (int idx = 0; idx<img1.GetNVox(); ++idx) {
-		(*alpha_est)[idx] = std::acos(std::abs(img2[idx])/2.0/std::abs(img1[idx]));
+// B1Mapping destructor
+B1Mapping::
+~B1Mapping() {
+	return;
+}
+// B1Mapping GetImg
+Image<std::complex<double> >& B1Mapping::
+GetImg(const int d) {
+	return imgs[d];
+}
+
+// DoubleAngle constructor
+DoubleAngle::
+DoubleAngle(const double alpha_nom, const double TR, const double TE,
+	const Image<std::complex<double> > &b1p,
+	const Image<std::complex<double> > &b1m, const double spoiling,
+	const Body &body) {
+	GREImage(&imgs[0],alpha_nom,TR,TE,b1p,b1m,spoiling,body);
+	GREImage(&imgs[1],2.0*alpha_nom,TR,TE,b1p,b1m,spoiling,body);
+	return;
+}
+// DoubleAngle destructor
+DoubleAngle::
+~DoubleAngle() {
+	return;
+}
+// DoubleAngle Run
+void DoubleAngle::
+Run(Image<double> *alpha_est, const double sigma) {
+	*alpha_est = Image<double>(imgs[0].GetSize(0),imgs[0].GetSize(1),imgs[0].GetSize(2));
+	std::array<Image<std::complex<double> >,2>* imgs_noise;
+	if (sigma > 0.0) {
+		imgs_noise = new std::array<Image<std::complex<double> >,2>();
+		AddNoise(imgs_noise,imgs,sigma);
+	} else {
+		imgs_noise = &imgs;
+	}
+	for (int idx = 0; idx<imgs[0].GetNVox(); ++idx) {
+		(*alpha_est)[idx] = std::acos(std::abs((*imgs_noise)[1][idx])/2.0/std::abs((*imgs_noise)[0][idx]));
+	}
+	if (sigma>0.0) {
+		delete imgs_noise;
 	}
 	return;
 }
 
-// Actual flip-angle b1-mapping
-void ActualFlipAngle(Image<double> *alpha_est,
-	Image<std::complex<double> > *img1, Image<std::complex<double> > *img2,
-	const double alpha_nom, const double TR1, const double TR2,
+// ActualFlipAngle constructor
+ActualFlipAngle::
+ActualFlipAngle(const double alpha_nom, const double TR1, const double TR2,
 	const double TE, const Image<std::complex<double> > &b1p,
 	const Image<std::complex<double> > &b1m, const double spoiling,
 	const Body &body) {
-	// noiseless AFI images
-	AFIImage(img1,img2,alpha_nom,TR1,TR2,TE,b1p,b1m,spoiling,body);
-	// estimate the flip-angle
-	ActualFlipAngleAlpha(alpha_est,*img1,*img2,TR2/TR1);
+	AFIImage(&imgs[0],&imgs[1],alpha_nom,TR1,TR2,TE,b1p,b1m,spoiling,body);
+	TRratio = TR2/TR1;
 	return;
 }
-void ActualFlipAngleAlpha(Image<double> *alpha_est,
-	const Image<std::complex<double> > &img1,
-	const Image<std::complex<double> > &img2,
-	const double TRratio) {
-	*alpha_est = Image<double>(img1.GetSize(0),img1.GetSize(1),img1.GetSize(2));
-	for (int idx = 0; idx<img1.GetNVox(); ++idx) {
-		double tmp = std::abs(img2[idx])/std::abs(img1[idx]);
+// ActualFlipAngle destructor
+ActualFlipAngle::
+~ActualFlipAngle() {
+	return;
+}
+// ActualFlipAngle Run
+void ActualFlipAngle::
+Run(Image<double> *alpha_est, const double sigma) {
+	*alpha_est = Image<double> (imgs[0].GetSize(0),imgs[0].GetSize(1),imgs[0].GetSize(2));
+	std::array<Image<std::complex<double> >,2>* imgs_noise;
+	if (sigma > 0.0) {
+		imgs_noise = new std::array<Image<std::complex<double> >,2>();
+		AddNoise(imgs_noise,imgs,sigma);
+	} else {
+		imgs_noise = &imgs;
+	}
+	for (int idx = 0; idx<imgs[0].GetNVox(); ++idx) {
+		double tmp = std::abs((*imgs_noise)[1][idx])/std::abs((*imgs_noise)[0][idx]);
 		(*alpha_est)[idx] = std::acos((TRratio*tmp-1.0)/(TRratio-tmp));
 	}
+	if (sigma>0.0) {
+		delete imgs_noise;
+	}
 	return;
 }
 
-// Bloch-Siegert shift b1-mapping
-void BlochSiegertShift(Image<double> *alpha_est,
-	Image<std::complex<double> > *img1, Image<std::complex<double> > *img2,
-	const double alpha_nom, const double TR, const double TE,
+// BlochSiegertShift constructor
+BlochSiegertShift::
+BlochSiegertShift(const double alpha_nom, const double TR, const double TE,
 	const double bss_offres, const double bss_length,
 	const Image<std::complex<double> > &b1p,
 	const Image<std::complex<double> > &b1m, const double spoiling,
 	const Body &body) {
-	// noiseless BSS images
-	BSSImage(img1,alpha_nom,TR,TE,+bss_offres,bss_length,b1p,b1m,spoiling,body);
-	BSSImage(img2,alpha_nom,TR,TE,-bss_offres,bss_length,b1p,b1m,spoiling,body);
-	// estimate the flip-angle
-	double Kbs = GAMMA*GAMMA*bss_length/2.0/bss_offres;
-	BlochSiegertShiftAlpha(alpha_est,*img1,*img2,Kbs);
+	BSSImage(&imgs[0],alpha_nom,TR,TE,+bss_offres,bss_length,b1p,b1m,spoiling,body);
+	BSSImage(&imgs[1],alpha_nom,TR,TE,-bss_offres,bss_length,b1p,b1m,spoiling,body);
+	Kbs = GAMMA*GAMMA*bss_length/2.0/bss_offres;
 	return;
 }
-void BlochSiegertShiftAlpha(Image<double> *alpha_est,
-	const Image<std::complex<double> > &img1,
-	const Image<std::complex<double> > &img2, const double Kbs) {
-	*alpha_est = Image<double>(img1.GetSize(0),img1.GetSize(1),img1.GetSize(2));
-	for (int idx = 0; idx<img1.GetNVox(); ++idx) {
-		(*alpha_est)[idx] = std::sqrt(std::arg(img1[idx]/img2[idx])/2.0/Kbs);
+// BlochSiegertShift destructor
+BlochSiegertShift::
+~BlochSiegertShift() {
+	return;
+}
+// BlochSiegertShift run
+void BlochSiegertShift::
+Run(Image<double> *alpha_est, const double sigma) {
+	*alpha_est = Image<double>(imgs[0].GetSize(0),imgs[0].GetSize(1),imgs[0].GetSize(2));
+	std::array<Image<std::complex<double> >,2>* imgs_noise;
+	if (sigma > 0.0) {
+		imgs_noise = new std::array<Image<std::complex<double> >,2>();
+		AddNoise(imgs_noise,imgs,sigma);
+	} else {
+		imgs_noise = &imgs;
+	}
+	for (int idx = 0; idx<imgs[0].GetNVox(); ++idx) {
+		(*alpha_est)[idx] = std::sqrt(std::arg((*imgs_noise)[0][idx]/(*imgs_noise)[1][idx])/2.0/Kbs);
+	}
+	if (sigma>0.0) {
+		delete imgs_noise;
+	}
+	return;
+}
+
+// Noise utils
+double ComputeSigma(const std::array<Image<std::complex<double> >,2> &imgs,
+	const double noise) {
+	std::array<double,2> sigma{0.0,0.0};
+	for (int d = 0; d<2; ++d) {
+		Image<double> tmp(imgs[0].GetSize(0),imgs[0].GetSize(1),imgs[0].GetSize(2));
+		for (int idx = 0; idx<imgs[d].GetNVox(); ++idx) {
+			tmp[idx] = std::abs(imgs[d][idx]);
+		}
+		sigma[d] = Avg(tmp.GetData())*noise;
+	}
+	return (sigma[0]+sigma[1])/2.0;
+}
+void AddNoise(std::array<Image<std::complex<double> >,2> *imgs_noise,
+	const std::array<Image<std::complex<double> >,2> &imgs,
+	const double sigma) {
+	std::random_device generator;
+	std::normal_distribution<double> distribution(0.0,sigma);
+	for (int d = 0; d<2; ++d) {
+		(*imgs_noise)[d] = Image<std::complex<double> >(imgs[d].GetSize(0),imgs[d].GetSize(1),imgs[d].GetSize(2));
+		for (int idx = 0; idx<imgs[d].GetNVox(); ++idx) {
+			std::complex<double> tmp(distribution(generator),distribution(generator));
+			(*imgs_noise)[d][idx] = imgs[d][idx]+tmp;
+		}
 	}
 	return;
 }

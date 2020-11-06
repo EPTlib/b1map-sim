@@ -33,6 +33,8 @@
 #ifndef B1MAPSIM_B1MAPPING_H_
 #define B1MAPSIM_B1MAPPING_H_
 
+#include <array>
+
 #include "b1map/body.h"
 #include "b1map/image.h"
 #include "b1map/util.h"
@@ -40,107 +42,159 @@
 namespace b1map {
 
 /**
- * Compute a flip-angle estimate provided by a double-angle method with the
- * provided operative parameters.
- * 
- * @param alpha_est Pointer to the flip-angle estimate destination.
- * @param img1,img2 Pointer to the complex-valued MRI images destination.
- * @param alpha_nom Nominal flip-angle in radian.
- * @param TR Repetition time in millisecond.
- * @param TE Echo time in millisecond.
- * @param b1p Complex-valued B1+ distribution in tesla.
- * @param b1m Complex-valued B1- distribution.
- * @param spoiling Spoiling coefficient for transverse magnetization:
- *     1 is ideal spoiling; 0 is no spoiling.
- * @param body Physical description of the imaging body.
+ * Abstract interface representing any B1-mapping method.
  */
-void DoubleAngle(Image<double> *alpha_est, Image<std::complex<double> > *img1,
-	Image<std::complex<double> > *img2, const double alpha_nom, const double TR,
-	const double TE, const Image<std::complex<double> > &b1p,
-	const Image<std::complex<double> > &b1m, const double spoiling,
-	const Body &body);
-/**
- * Compute a flip-angle estimate provided by a double-angle method applied on
- * the provided images.
- * 
- * @param alpha_est Pointer to the flip-angle estimate destination.
- * @param img1,img2 Complex-valued MRI images for double-angle b1-mapping.
- */
-void DoubleAngleAlpha(Image<double> *alpha_est,
-	const Image<std::complex<double> > &img1,
-	const Image<std::complex<double> > &img2);
+class B1Mapping {
+    public:
+        /**
+         * Constructor.
+         */
+        B1Mapping();
+        /**
+         * Virtual destructor.
+         */
+        virtual ~B1Mapping() = 0;
+        /**
+         * Abstract method performing the b1-mapping.
+		 * 
+		 * @param alpha_est Pointer to the flip-angle estimate destination.
+		 * @param sigma Standard deviation of the noise in the images.
+         */
+        virtual void Run(Image<double> *alpha_est, const double sigma) = 0;
+		/**
+		 * 
+		 */
+		Image<std::complex<double> >& GetImg(const int d);
+	protected:
+		/// Complex-valued MRI images.
+		std::array<Image<std::complex<double> >,2> imgs;
+};
 
 /**
- * Compute a flip-angle estimate provided by an actual flip-angle method with
- * the provided operative parameters.
- * 
- * @param alpha_est Pointer to the flip-angle estimate destination.
- * @param img1,img2 Pointer to the complex-valued MRI images destination.
- * @param alpha_nom Nominal flip-angle in radian.
- * @param TR1,TR2 Repetition times in millisecond.
- * @param TE Echo time in millisecond.
- * @param b1p Complex-valued B1+ distribution in tesla.
- * @param b1m Complex-valued B1- distribution.
- * @param spoiling Spoiling coefficient for transverse magnetization:
- *     1 is ideal spoiling; 0 is no spoiling.
- * @param body Physical description of the imaging body.
+ * Implementation of the double-angle B1-mapping method.
  */
-void ActualFlipAngle(Image<double> *alpha_est,
-	Image<std::complex<double> > *img1, Image<std::complex<double> > *img2,
-	const double alpha_nom, const double TR1, const double TR2,
-	const double TE, const Image<std::complex<double> > &b1p,
-	const Image<std::complex<double> > &b1m, const double spoiling,
-	const Body &body);
-/**
- * Compute a flip-angle estimate provided by an actual flip-angle method
- * applied on the provided images.
- * 
- * @param alpha_est Pointer to the flip-angle estimate destination.
- * @param img1,img2 Complex-valued MRI images for actual flip-angle b1-mapping.
- * @param TRratio Ratio of the repetition times of the two images.
- */
-void ActualFlipAngleAlpha(Image<double> *alpha_est,
-	const Image<std::complex<double> > &img1,
-	const Image<std::complex<double> > &img2,
-	const double TRratio);
+class DoubleAngle : public B1Mapping {
+    public:
+        /**
+         * Constructor.
+		 *
+		 * @param alpha_nom Nominal flip-angle in radian.
+		 * @param TR Repetition time in millisecond.
+		 * @param TE Echo time in millisecond.
+		 * @param b1p Complex-valued B1+ distribution in tesla.
+		 * @param b1m Complex-valued B1- distribution.
+		 * @param spoiling Spoiling coefficient for transverse magnetization:
+		 *     1 is ideal spoiling; 0 is no spoiling.
+		 * @param body Physical description of the imaging body.
+         */
+        DoubleAngle(const double alpha_nom, const double TR, const double TE,
+			const Image<std::complex<double> > &b1p,
+			const Image<std::complex<double> > &b1m, const double spoiling,
+			const Body &body);
+        /**
+         * Virtual destructor.
+         */
+        virtual ~DoubleAngle();
+        /**
+         * Abstract method performing the b1-mapping.
+		 * 
+		 * @param alpha_est Pointer to the flip-angle estimate destination.
+		 * @param sigma Standard deviation of the noise in the images.
+         */
+        virtual void Run(Image<double> *alpha_est, const double sigma);
+};
 
 /**
- * Compute a flip-angle estimate provided by a Bloch-Siegert shift method with
- * the provided operative parameters.
- * 
- * @param alpha_est Pointer to the flip-angle estimate destination.
- * @param img1,img2 Pointer to the complex-valued MRI images destination.
- * @param alpha_nom Nominal flip-angle in radian.
- * @param TR Repetition time in millisecond.
- * @param TE Echo time in millisecond.
- * @param bss_offres Off-resonance frequency of the Bloch-Siegert pulse in
- *     radian per second.
- * @param bss_length Length of the Bloch-Siegert pulse in millisecond.
- * @param b1p Complex-valued B1+ distribution in tesla.
- * @param b1m Complex-valued B1- distribution.
- * @param spoiling Spoiling coefficient for transverse magnetization:
- *     1 is ideal spoiling; 0 is no spoiling.
- * @param body Physical description of the imaging body.
+ * Implementation of the actual flip-angle B1-mapping method.
  */
-void BlochSiegertShift(Image<double> *alpha_est,
-	Image<std::complex<double> > *img1, Image<std::complex<double> > *img2,
-	const double alpha_nom, const double TR, const double TE,
-	const double bss_offres, const double bss_length,
-	const Image<std::complex<double> > &b1p,
-	const Image<std::complex<double> > &b1m, const double spoiling,
-	const Body &body);
+class ActualFlipAngle : public B1Mapping {
+    public:
+        /**
+         * Constructor.
+		 *
+		 * @param alpha_nom Nominal flip-angle in radian.
+		 * @param TR1,TR2 Repetition times in millisecond.
+		 * @param TE Echo time in millisecond.
+		 * @param b1p Complex-valued B1+ distribution in tesla.
+		 * @param b1m Complex-valued B1- distribution.
+		 * @param spoiling Spoiling coefficient for transverse magnetization:
+		 *     1 is ideal spoiling; 0 is no spoiling.
+		 * @param body Physical description of the imaging body.
+         */
+        ActualFlipAngle(const double alpha_nom, const double TR1,
+			const double TR2, const double TE,
+			const Image<std::complex<double> > &b1p,
+			const Image<std::complex<double> > &b1m, const double spoiling,
+			const Body &body);
+        /**
+         * Virtual destructor.
+         */
+        virtual ~ActualFlipAngle();
+        /**
+         * Abstract method performing the b1-mapping.
+		 * 
+		 * @param alpha_est Pointer to the flip-angle estimate destination.
+		 * @param sigma Standard deviation of the noise in the images.
+         */
+        virtual void Run(Image<double> *alpha_est, const double sigma);
+	private:
+		/// Ratio of the repetition times
+		double TRratio;
+};
+
 /**
- * Compute a flip-angle estimate provided by a Bloch-Siegert shift method
- * applied on the provided images.
- * 
- * @param alpha_est Pointer to the flip-angle estimate destination.
- * @param img1,img2 Complex-valued MRI images for Bloch-Siegert b1-mapping.
- * @param Kbs Phase coefficient.
+ * Implementation of the Bloch-Siegert shift B1-mapping method.
  */
-void BlochSiegertShiftAlpha(Image<double> *alpha_est,
-	const Image<std::complex<double> > &img1,
-	const Image<std::complex<double> > &img2,
-	const double Kbs);
+class BlochSiegertShift : public B1Mapping {
+    public:
+        /**
+         * Constructor.
+		 *
+		 * @param alpha_nom Nominal flip-angle in radian.
+		 * @param TR Repetition time in millisecond.
+		 * @param TE Echo time in millisecond.
+		 * @param bss_offres Off-resonance frequency of the Bloch-Siegert pulse in
+    	 *     radian per millisecond.
+    	 * @param bss_length Length of the Bloch-Siegert pulse in millisecond.
+		 * @param b1p Complex-valued B1+ distribution in tesla.
+		 * @param b1m Complex-valued B1- distribution.
+		 * @param spoiling Spoiling coefficient for transverse magnetization:
+		 *     1 is ideal spoiling; 0 is no spoiling.
+		 * @param body Physical description of the imaging body.
+         */
+        BlochSiegertShift(const double alpha_nom, const double TR,
+			const double TE, const double bss_offres, const double bss_length,
+			const Image<std::complex<double> > &b1p,
+			const Image<std::complex<double> > &b1m, const double spoiling,
+			const Body &body);
+        /**
+         * Virtual destructor.
+         */
+        virtual ~BlochSiegertShift();
+        /**
+         * Abstract method performing the b1-mapping.
+		 * 
+		 * @param alpha_est Pointer to the flip-angle estimate destination.
+		 * @param sigma Standard deviation of the noise in the images.
+         */
+        virtual void Run(Image<double> *alpha_est, const double sigma);
+	private:
+		/// 
+		double Kbs;
+};
+
+/**
+ * 
+ */
+double ComputeSigma(const std::array<Image<std::complex<double> >,2> &imgs,
+	const double noise);
+
+/**
+ * 
+ */
+void AddNoise(std::array<Image<std::complex<double> >,2> *imgs_noise,
+	const std::array<Image<std::complex<double> >,2> &imgs,
+	const double sigma);
 
 }  // namespace b1map
 

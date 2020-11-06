@@ -135,6 +135,8 @@ int main(int argc, char **argv) {
     cfgdata<string> rxsens_addr("","input.rx-sensitivity");
     cfgdata<string> rxphase_addr("","input.rx-phase");
     cfgdata<string> imgs_addr("","output.intermediate-images");
+    cfgdata<int> samples(1,"montecarlo.samples");
+    cfgdata<double> noise(0.0,"montecarlo.noise");
     // load the input data
     try {
         //   title
@@ -152,6 +154,8 @@ int main(int argc, char **argv) {
         //   output
         LOADMANDATORYDATA(io_toml,est_addr);
         LOADOPTIONALDATA(io_toml,imgs_addr);
+        LOADOPTIONALDATA(io_toml,samples);
+        LOADOPTIONALDATA(io_toml,noise);
     } catch (const runtime_error &e) {
         cout<<e.what()<<endl;
         return 1;
@@ -161,16 +165,28 @@ int main(int argc, char **argv) {
     B1MapMethod b1map_method = static_cast<B1MapMethod>(method.first);
     bool thereis_b1m = (rxsens_addr.first!="" && rxphase_addr.first!="");
     bool thereis_imgs = imgs_addr.first!="";
-    //   EPT method
+    bool thereis_noise = noise.first>0;
+    //   B1-mapping method
     if (method.first<0||b1map_method>=B1MapMethod::END) {
         cout<<"FATAL ERROR in config file: Wrong data format '"<<method.second<<"'"<<endl;
         return 1;
+    }
+    //   noise
+    if (samples.first<1) {
+        cout<<"FATAL ERROR in config file: Wrong data format '"<<samples.second<<"'"<<endl;
+        return 1;
+    }
+    if (!thereis_noise&&samples.first>1) {
+        cout<<"WARNING in config file: Without noise the number of samples is set equal to 1"<<endl;
+        samples.first = 1;
     }
     // report the readen values
     cout<<"  "<<title.first<<"\n";
     cout<<"\n  Method: ("<<method.first<<") "<<ToString(b1map_method)<<"\n";
     cout<<"\n  Mesh size: ["<<nn.first[0]<<", "<<nn.first[1]<<", "<<nn.first[2]<<"]\n";
     cout<<"  Mesh step: ["<<dd.first[0]<<", "<<dd.first[1]<<", "<<dd.first[2]<<"] m\n";
+    cout<<"\n  Number of Monte Carlo samples: "<<samples.first<<"\n";
+    cout<<"  Additive noise: "<<noise.first*100.0<<" %\n";
     cout<<"\n  Body details addr.: '"<<body_addr.first<<"'\n";
     cout<<"\n  Tx sensitivity addr.: '"<<txsens_addr.first<<"'\n";
     cout<<"  Tx phase addr.: '"<<txphase_addr.first<<"'\n";
@@ -239,8 +255,6 @@ int main(int argc, char **argv) {
     }
     // load the method parameters and run the method
     Image<double> alpha_est;
-    Image<complex<double> > img1;
-    Image<complex<double> > img2;
     // declare common parameters
     cfgdata<double> alpha_nom; alpha_nom.second="parameter.alpha-nominal";
     cfgdata<double> TR; TR.second="parameter.TR";
@@ -270,6 +284,8 @@ int main(int argc, char **argv) {
         cout<<"FATAL ERROR in config file: Out of range '"<<spoiling.second<<"'"<<endl;
         return 1;
     }
+    // set-up the B1-mapping method
+    std::unique_ptr<B1Mapping> b1mapping;
     switch (b1map_method) {
         case B1MapMethod::DA: {
             // report the parameters
@@ -279,8 +295,8 @@ int main(int argc, char **argv) {
             cout<<"  Echo time (TE): "<<TE.first<<" ms\n";
             cout<<"  Spoiling coefficient: "<<spoiling.first<<"\n";
             cout<<endl;
-            // run the method
-            DoubleAngle(&alpha_est,&img1,&img2,alpha_nom.first,TR.first,TE.first,b1p,b1m,spoiling.first,body);
+            // initialise the method
+            b1mapping.reset(new DoubleAngle(alpha_nom.first,TR.first,TE.first,b1p,b1m,spoiling.first,body));
             break;
         }
         case B1MapMethod::AFI: {
@@ -307,8 +323,8 @@ int main(int argc, char **argv) {
             cout<<"  Echo time (TE): "<<TE.first<<" ms\n";
             cout<<"  Spoiling coefficient: "<<spoiling.first<<"\n";
             cout<<endl;
-            // run the method
-            ActualFlipAngle(&alpha_est,&img1,&img2,alpha_nom.first,TR.first,TR2,TE.first,b1p,b1m,spoiling.first,body);
+            // initialise the method
+            b1mapping.reset(new ActualFlipAngle(alpha_nom.first,TR.first,TR2,TE.first,b1p,b1m,spoiling.first,body));
             break;
         }
         case B1MapMethod::BSS: {
@@ -339,25 +355,54 @@ int main(int argc, char **argv) {
             cout<<"  Repetition time (TR): "<<TR.first<<" ms\n";
             cout<<"  Echo time (TE): "<<TE.first<<" ms\n";
             cout<<"  Spoiling coefficient: "<<spoiling.first<<"\n";
-            cout<<"  BSS off-resonance: "<<bss_offres.first<<" Hz\n";
+            cout<<"  BSS off-resonance: "<<bss_offres.first<<" kHz\n";
             cout<<"  BSS pulse length: "<<bss_length.first<<" ms\n";
             cout<<endl;
-            // run the method
-            BlochSiegertShift(&alpha_est,&img1,&img2,alpha_nom.first,TR.first,TE.first,2.0*PI*bss_offres.first,bss_length.first,b1p,b1m,spoiling.first,body);
+            // initialise the method
+            b1mapping.reset(new BlochSiegertShift(alpha_nom.first,TR.first,TE.first,2.0*PI*bss_offres.first,bss_length.first,b1p,b1m,spoiling.first,body));
             break;
         }
     }
-    // get the results
+    // save the images
+    std::array<Image<complex<double> >,2> imgs;
+    imgs[0] = b1mapping->GetImg(0);
+    imgs[1] = b1mapping->GetImg(1);
+    if (thereis_imgs) {
+        try {
+                SaveComplexMap(imgs[0],imgs_addr.first+"1");
+                SaveComplexMap(imgs[1],imgs_addr.first+"2");
+        } catch (const runtime_error &e) {
+            cout<<e.what()<<endl;
+            return 1;
+        }
+    }
+    // apply the method noiseless
+    cout<<"Noiseless B1-mapping..."<<flush;
+    b1mapping->Run(&alpha_est,0.0);
+    // save the result
     try {
         SAVEMAP(alpha_est,est_addr.first);
-        if (thereis_imgs) {
-            SaveComplexMap(img1,imgs_addr.first+"1");
-            SaveComplexMap(img2,imgs_addr.first+"2");
-        }
     } catch (const runtime_error &e) {
         cout<<e.what()<<endl;
         return 1;
     }
+    cout<<"done!\n";
+    cout<<endl;
+    // apply the Monte Carlo with noisy input
+    double sigma = ComputeSigma(imgs,noise.first);
+    cout<<"Monte Carlo sampling:\n";
+    for (int m = 0; m<samples.first; ++m) {
+        cout<<"  MC"<<to_string(m)<<"..."<<flush;
+        b1mapping->Run(&alpha_est,sigma);
+        try {
+            SAVEMAP(alpha_est,est_addr.first+"-MC"+to_string(m));
+        } catch (const runtime_error &e) {
+            cout<<e.what()<<endl;
+            return 1;
+        }
+        cout<<"done!\n";
+    }
+    cout<<endl;
     //
     auto end = chrono::system_clock::now();
     auto elapsed = chrono::duration_cast<chrono::seconds>(end - start);

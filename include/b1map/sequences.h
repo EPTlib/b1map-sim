@@ -88,7 +88,7 @@ void AFIImage(Image<std::complex<double> > *img1, Image<std::complex<double> > *
  * @param TR Repetition time in millisecond.
  * @param TE Echo time in millisecond.
  * @param bss_offres Off-resonance frequency of the Bloch-Siegert pulse in
- *     radian per second.
+ *     radian per millisecond.
  * @param bss_length Length of the Bloch-Siegert pulse in millisecond.
  * @param b1p Complex-valued B1+ distribution in tesla.
  * @param b1m Complex-valued B1- distribution.
@@ -133,12 +133,18 @@ void Relax(Image<double> *mx, Image<double> *my, Image<double> *mz,
 	const Image<double> &e1, const Image<double> &e2, const Image<int> &mat);
 
 /**
+ * Check if the steady-state is reached.
  * 
+ * @param mx,my Pointers to new magnetization transverse components.
+ * @param mx_old,my_old Pointers to old magnetization transverse components.
  */
 bool IsSteadyState(const Image<double> &mx, const Image<double> &my,
 	const Image<double> &mx_old, const Image<double> &my_old);
 /**
+ * Check if the steady-state is reached.
  * 
+ * @param m Pointer to new magnetization transverse component.
+ * @param m_old Pointer to old magnetization transverse component.
  */
 bool IsSteadyState(const Image<double> &m, const Image<double> &m_old);
 
