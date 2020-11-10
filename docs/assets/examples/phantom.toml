@@ -1,0 +1,5 @@
+[body]
+    materials = "homogeneous-phantom-15t.h5:/segmentation"
+    proton-density = "homogeneous-phantom-15t-prop.h5:/rho"
+    longitudinal-relaxation = "homogeneous-phantom-15t-prop.h5:/T1"
+    transverse-relaxation = "homogeneous-phantom-15t-prop.h5:/T2"

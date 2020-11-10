@@ -37,7 +37,7 @@ method = 0
 |------+---------------------|
 | 0    | Double angle        |
 | 1    | Actual flip-angle   |
-| 2    | Bloch-Siegert shift |
+| 2    | Bloch--Siegert shift |
 
 ## Mesh
 
@@ -86,7 +86,7 @@ method = 0
     intermediate-images = "example.h5:/imgs"
 ```
 
-- ```alpha-estimate``` is the address where the estimated flip-angle expressed in radian (or B1+ magnitude expressed in tesla, in the case of Bloch-Siegert shift) will be written. It must be a dataset in an .h5 file.
+- ```alpha-estimate``` is the address where the estimated flip-angle expressed in radian (or B1+ magnitude expressed in tesla, in the case of Bloch--Siegert shift) will be written. It must be a dataset in an .h5 file.
 - ```intermediate-images``` is the root of the address where the intermediate images of the b1-mapping procedure will be written. It must be a dataset in an .h5 file.
 
 Given the above example, the real and imaginary parts of the two intermediate images would be stored in the four datasets: \\
@@ -123,7 +123,7 @@ No additional parameters are needed.
 
 - ```TRratio``` is the ratio between the TR of the two intermediate images.
 
-### Bloch-Siegert shift (2)
+### Bloch--Siegert shift (2)
 
 ```toml
 [parameter]
@@ -131,10 +131,10 @@ No additional parameters are needed.
     bss-length = 4.0 # [ms]
 ```
 
-- ```bss-offres``` is the off-resonance frequency of the Bloch-Siegert pulse expressed in kilohertz.
-- ```bss-length``` is the length of the Bloch-Siegert pulse expressed in millisecond.
+- ```bss-offres``` is the off-resonance frequency of the Bloch--Siegert pulse expressed in kilohertz.
+- ```bss-length``` is the length of the Bloch--Siegert pulse expressed in millisecond.
 
-The implemented Bloch-Siegert shift method assumes that the Bloch-Siegert pulse has only the selected off-resonance frequency. It is a good approximation of the common Fermi pulse.
+The implemented Bloch--Siegert shift method assumes that the Bloch--Siegert pulse has only the selected off-resonance frequency. It is a good approximation of the common Fermi pulse.
 
 ## Monte Carlo
 
@@ -150,7 +150,7 @@ The implemented Bloch-Siegert shift method assumes that the Bloch-Siegert pulse 
 This section is optional. If it is present, then a number of noisy output (the Monte Carlo samples) are generated in addition to the noiseless ones.
 The value of ```noise``` must be greater than zero, otherwise this section will be ignored.
 
-Given ```output.alpha-estimate = "example.h5:/alpha"```, then the samples are stored in \\
+Given ```output.alpha-estimate = "example.h5:/alpha"```, then the 10 samples are stored in \\
 ```example.h5:/alpha0``` ```example.h5:/alpha1``` \\
 ```example.h5:/alpha2``` ```example.h5:/alpha3``` \\
 ```example.h5:/alpha4``` ```example.h5:/alpha5``` \\
