@@ -170,6 +170,7 @@ TRxPhaseGRE(const double alpha_nom, const double TR, const double TE,
 	const Image<std::complex<double> > &b1m, const double spoiling,
 	const Body &body) {
 	GREImage(&imgs[0],alpha_nom,TR,TE,b1p,b1m,spoiling,body);
+	imgs[1] = Image<std::complex<double> >(b1p.GetSize(0),b1p.GetSize(1),b1p.GetSize(2));
 	return;
 }
 // TRxPhaseGRE destructor

@@ -362,6 +362,18 @@ int main(int argc, char **argv) {
             b1mapping.reset(new BlochSiegertShift(alpha_nom.first,TR.first,TE.first,2.0*PI*bss_offres.first,bss_length.first,b1p,b1m,spoiling.first,body));
             break;
         }
+        case B1MapMethod::TRX: {
+            // report the parameters
+            cout<<"Parameters:\n";
+            cout<<"  Nominal flip-angle: "<<alpha_nom.first<<" rad\n";
+            cout<<"  Repetition time (TR): "<<TR.first<<" ms\n";
+            cout<<"  Echo time (TE): "<<TE.first<<" ms\n";
+            cout<<"  Spoiling coefficient: "<<spoiling.first<<"\n";
+            cout<<endl;
+            // initialise the method
+            b1mapping.reset(new TRxPhaseGRE(alpha_nom.first,TR.first,TE.first,b1p,b1m,spoiling.first,body));
+            break;
+        }
     }
     // save the images
     std::array<Image<complex<double> >,2> imgs;

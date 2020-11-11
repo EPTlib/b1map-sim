@@ -46,6 +46,8 @@ enum class B1MapMethod {
     AFI,
     /// Bloch-Siegert shift
     BSS,
+    /// Transceive phase acquisition
+    TRX,
     /// Fictitious B1-mapping method
     END,
 };
@@ -54,6 +56,7 @@ std::string ToString(const B1MapMethod method) {
         case B1MapMethod::DA: return "Double-angle";
         case B1MapMethod::AFI: return "Actual flip-angle";
         case B1MapMethod::BSS: return "Bloch-Siegert shift";
+        case B1MapMethod::TRX: return "Transceive phase acquisition";
     }
     return "";
 }
