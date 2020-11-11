@@ -163,6 +163,40 @@ Run(Image<double> *alpha_est, const double sigma) {
 	return;
 }
 
+// TRxPhaseGRE constructor
+TRxPhaseGRE::
+TRxPhaseGRE(const double alpha_nom, const double TR, const double TE,
+	const Image<std::complex<double> > &b1p,
+	const Image<std::complex<double> > &b1m, const double spoiling,
+	const Body &body) {
+	GREImage(&imgs[0],alpha_nom,TR,TE,b1p,b1m,spoiling,body);
+	return;
+}
+// TRxPhaseGRE destructor
+TRxPhaseGRE::
+~TRxPhaseGRE() {
+	return;
+}
+// TRxPhaseGRE Run
+void TRxPhaseGRE::
+Run(Image<double> *alpha_est, const double sigma) {
+	*alpha_est = Image<double>(imgs[0].GetSize(0),imgs[0].GetSize(1),imgs[0].GetSize(2));
+	Image<std::complex<double> >* img_noise;
+	if (sigma > 0.0) {
+		img_noise = new Image<std::complex<double> >;
+		AddNoise(img_noise,imgs[0],sigma);
+	} else {
+		img_noise = &(imgs[0]);
+	}
+	for (int idx = 0; idx<imgs[0].GetNVox(); ++idx) {
+		(*alpha_est)[idx] = std::arg((*img_noise)[idx]);
+	}
+	if (sigma>0.0) {
+		delete img_noise;
+	}
+	return;
+}
+
 // Noise utils
 double ComputeSigma(const std::array<Image<std::complex<double> >,2> &imgs,
 	const double noise) {
@@ -187,6 +221,18 @@ void AddNoise(std::array<Image<std::complex<double> >,2> *imgs_noise,
 			std::complex<double> tmp(distribution(generator),distribution(generator));
 			(*imgs_noise)[d][idx] = imgs[d][idx]+tmp;
 		}
+	}
+	return;
+}
+void AddNoise(Image<std::complex<double> > *img_noise,
+	const Image<std::complex<double> > &img,
+	const double sigma) {
+	std::random_device generator;
+	std::normal_distribution<double> distribution(0.0,sigma);
+	(*img_noise) = Image<std::complex<double> >(img.GetSize(0),img.GetSize(1),img.GetSize(2));
+	for (int idx = 0; idx<img.GetNVox(); ++idx) {
+		std::complex<double> tmp(distribution(generator),distribution(generator));
+		(*img_noise)[idx] = img[idx]+tmp;
 	}
 	return;
 }

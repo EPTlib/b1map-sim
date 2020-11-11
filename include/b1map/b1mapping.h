@@ -184,6 +184,40 @@ class BlochSiegertShift : public B1Mapping {
 };
 
 /**
+ * Implementation of the acquisition of the transceive phase with a GRE.
+ */
+class TRxPhaseGRE : public B1Mapping {
+    public:
+        /**
+         * Constructor.
+		 *
+		 * @param alpha_nom Nominal flip-angle in radian.
+		 * @param TR Repetition time in millisecond.
+		 * @param TE Echo time in millisecond.
+		 * @param b1p Complex-valued B1+ distribution in tesla.
+		 * @param b1m Complex-valued B1- distribution.
+		 * @param spoiling Spoiling coefficient for transverse magnetization:
+		 *     1 is ideal spoiling; 0 is no spoiling.
+		 * @param body Physical description of the imaging body.
+         */
+        TRxPhaseGRE(const double alpha_nom, const double TR, const double TE,
+			const Image<std::complex<double> > &b1p,
+			const Image<std::complex<double> > &b1m, const double spoiling,
+			const Body &body);
+        /**
+         * Virtual destructor.
+         */
+        virtual ~TRxPhaseGRE();
+        /**
+         * Abstract method performing the b1-mapping.
+		 * 
+		 * @param alpha_est Pointer to the flip-angle estimate destination.
+		 * @param sigma Standard deviation of the noise in the images.
+         */
+        virtual void Run(Image<double> *alpha_est, const double sigma);
+};
+
+/**
  * 
  */
 double ComputeSigma(const std::array<Image<std::complex<double> >,2> &imgs,
@@ -194,6 +228,13 @@ double ComputeSigma(const std::array<Image<std::complex<double> >,2> &imgs,
  */
 void AddNoise(std::array<Image<std::complex<double> >,2> *imgs_noise,
 	const std::array<Image<std::complex<double> >,2> &imgs,
+	const double sigma);
+
+/**
+ * 
+ */
+void AddNoise(Image<std::complex<double> > *img_noise,
+	const Image<std::complex<double> > &img,
 	const double sigma);
 
 }  // namespace b1map
