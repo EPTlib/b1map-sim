@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
     cout<<LicenseBoilerplate()<<endl;
     // check the number of input
     if (argc<2) {
-        cout<<"Usage example: "<<project::str()<<" <config file>"<<endl;
+        cout<<"Usage example: "<<std::string(project::name)<<" <config file>"<<endl;
         return -1;
     }
     // load the config file
