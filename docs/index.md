@@ -40,6 +40,7 @@ The following methods are currently implemented in ```b1map-sim``` and can be ex
 1. Double angle
 1. Actual flip-angle
 1. Bloch--Siegert shift
+1. Transceive phase acquisition
 
 ---
 
