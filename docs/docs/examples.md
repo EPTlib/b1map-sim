@@ -39,7 +39,7 @@ The configuration file for the double angle example can be downloaded [here](/as
 {% include_relative da.toml %}
 ```
 
-The intermediate images and the actual and the estimated flip-angle are reported in the following picture. The results are obtained by applying the double angle method. Before combining the two intermediate images to obtain the flip-angle estimate, noise with a signal to noise ratio (SNR) equal to 200 is added.
+The intermediate images and the actual and the estimated flip-angle are reported in the following picture. The results are obtained by applying the double angle method. Before combining the two intermediate images to obtain the flip-angle estimate, noise with a signal to noise ratio (SNR) equal to 100 is added.
 
 ![](/b1map-sim/assets/images/b1map-da.png){: style="width:384px"}
 
@@ -51,7 +51,7 @@ The configuration file for the actual flip-angle example can be downloaded [here
 {% include_relative afi.toml %}
 ```
 
-The intermediate images and the actual and the estimated flip-angle are reported in the following picture. The results are obtained by applying the actual flip-angle method. Before combining the two intermediate images to obtain the flip-angle estimate, noise with a signal to noise ratio (SNR) equal to 200 is added.
+The intermediate images and the actual and the estimated flip-angle are reported in the following picture. The results are obtained by applying the actual flip-angle method. Before combining the two intermediate images to obtain the flip-angle estimate, noise with a signal to noise ratio (SNR) equal to 100 is added.
 
 ![](/b1map-sim/assets/images/b1map-afi.png){: style="width:384px"}
 
@@ -63,6 +63,18 @@ The configuration file for the Bloch--Siegert shift example can be downloaded [h
 {% include_relative bss.toml %}
 ```
 
-The intermediate images and the actual and the estimated transmit sensitivity magnitude are reported in the following picture. The results are obtained by applying the Bloch--Siegert shift method. Before combining the two intermediate images to obtain the transmit sensitivity magnitude estimate, noise with a signal to noise ratio (SNR) equal to 200 is added.
+The intermediate images and the actual and the estimated transmit sensitivity magnitude are reported in the following picture. The results are obtained by applying the Bloch--Siegert shift method. Before combining the two intermediate images to obtain the transmit sensitivity magnitude estimate, noise with a signal to noise ratio (SNR) equal to 100 is added.
 
 ![](/b1map-sim/assets/images/b1map-bss.png){: style="width:384px"}
+
+## Transceive phase acquisition
+
+The configuration file for the transceive phase acquisition example can be downloaded [here](/assets/examples/trx.toml).
+
+```toml
+{% include_relative trx.toml %}
+```
+
+The actual and the estimated transceive phase are reported in the following picture. Noise with a signal to noise ratio (SNR) equal to 100 is simulated.
+
+![](/b1map-sim/assets/images/b1map-trx.png){: style="width:384px"}

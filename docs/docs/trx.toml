@@ -1,0 +1,27 @@
+title = "Test"
+method = 3
+
+[mesh]
+	size = [100,100,11]
+	step = [2e-3,2e-3,2e-3]
+
+[input]
+	body = "phantom.toml"
+	tx-sensitivity = "homogeneous-phantom-15t.h5:/tx_sens"
+	tx-phase = "homogeneous-phantom-15t.h5:/tx_phase"
+    rx-sensitivity = "homogeneous-phantom-15t.h5:/rx_sens"
+	rx-phase = "homogeneous-phantom-15t.h5:/rx_phase"
+
+[montecarlo]
+	samples = 1
+	noise = 0.01
+
+[output]
+	alpha-estimate = "homogeneous-phantom-15t-b1map-trx.h5:/trx-phase"
+	intermediate-images = "homogeneous-phantom-15t-b1map-trx.h5:/imgs"
+
+[parameter]
+	alpha-nominal = 1.57
+	TR = 30.0
+	TE = 0.0
+	spoiling = 0.99

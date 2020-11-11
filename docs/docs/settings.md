@@ -33,11 +33,12 @@ method = 0
 - The ```title``` will appear in the log of the application.
 - The ```method``` is selected according to the following table.
 
-| Code | Method              |
-|------+---------------------|
-| 0    | Double angle        |
-| 1    | Actual flip-angle   |
-| 2    | Bloch--Siegert shift |
+| Code | Method                       |
+|------+------------------------------|
+| 0    | Double angle                 |
+| 1    | Actual flip-angle            |
+| 2    | Bloch--Siegert shift         |
+| 3    | Transceive phase acquisition |
 
 ## Mesh
 
@@ -135,6 +136,10 @@ No additional parameters are needed.
 - ```bss-length``` is the length of the Bloch--Siegert pulse expressed in millisecond.
 
 The implemented Bloch--Siegert shift method assumes that the Bloch--Siegert pulse has only the selected off-resonance frequency. It is a good approximation of the common Fermi pulse.
+
+### Transceive phase acquisition (3)
+
+No additional parameters are needed.
 
 ## Monte Carlo
 
