@@ -23,9 +23,9 @@ List of examples for each implemented B1-mapping method.
 
 The following examples are based on data simulated of a homogeneous phantom imaged with a birdcage body coil at 64 MHz, that is the Larmor frequency of a 1.5 T scanner.
 
-The .h5 files used in the examples are [homogeneous-phantom-15t.h5](/assets/examples/homogeneous-phantom-15t.h5), containing the geometry of the phantom and the simulated transmit and receive sensitivities, and [homogeneous-phantom-15t-prop.h5](/assets/examples/homogeneous-phantom-15t-prop.h5), containing the physical properties of the phantom.
+The .h5 files used in the examples are [homogeneous-phantom-15t.h5](/b1map-sim/assets/examples/homogeneous-phantom-15t.h5), containing the geometry of the phantom and the simulated transmit and receive sensitivities, and [homogeneous-phantom-15t-prop.h5](/b1map-sim/assets/examples/homogeneous-phantom-15t-prop.h5), containing the physical properties of the phantom.
 
-The description of the imaged body is provided by the .toml file that can be downloaded [here](/assets/examples/phantom.toml).
+The description of the imaged body is provided by the .toml file that can be downloaded [here](/b1map-sim/assets/examples/phantom.toml).
 
 ```toml
 {% include_relative phantom.toml %}
@@ -33,7 +33,7 @@ The description of the imaged body is provided by the .toml file that can be dow
 
 ## Double angle
 
-The configuration file for the double angle example can be downloaded [here](/assets/examples/da.toml).
+The configuration file for the double angle example can be downloaded [here](/b1map-sim/assets/examples/da.toml).
 
 ```toml
 {% include_relative da.toml %}
@@ -45,7 +45,7 @@ The intermediate images and the actual and the estimated flip-angle are reported
 
 ## Actual flip-angle
 
-The configuration file for the actual flip-angle example can be downloaded [here](/assets/examples/afi.toml).
+The configuration file for the actual flip-angle example can be downloaded [here](/b1map-sim/assets/examples/afi.toml).
 
 ```toml
 {% include_relative afi.toml %}
@@ -57,7 +57,7 @@ The intermediate images and the actual and the estimated flip-angle are reported
 
 ## Bloch--Siegert shift
 
-The configuration file for the Bloch--Siegert shift example can be downloaded [here](/assets/examples/bss.toml).
+The configuration file for the Bloch--Siegert shift example can be downloaded [here](/b1map-sim/assets/examples/bss.toml).
 
 ```toml
 {% include_relative bss.toml %}
@@ -69,7 +69,7 @@ The intermediate images and the actual and the estimated transmit sensitivity ma
 
 ## Transceive phase acquisition
 
-The configuration file for the transceive phase acquisition example can be downloaded [here](/assets/examples/trx.toml).
+The configuration file for the transceive phase acquisition example can be downloaded [here](/b1map-sim/assets/examples/trx.toml).
 
 ```toml
 {% include_relative trx.toml %}
