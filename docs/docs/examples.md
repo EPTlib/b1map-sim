@@ -4,7 +4,7 @@ title: Examples
 nav_order: 2
 description:
 permalink: /examples
-last_modified_date: 2020-07-30T10:44:37+02:00
+last_modified_date: 2022-04-13T09:19:31+0200
 ---
 
 # Examples
